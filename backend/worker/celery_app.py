@@ -1,7 +1,7 @@
 """backend/worker/celery_app.py — Celery with CloudAMQP broker, no result backend."""
 from celery import Celery
-from backend.config import settings
 
+from backend.config import settings
 
 celery_app = Celery(
     "cineagent_worker",

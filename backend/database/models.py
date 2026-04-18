@@ -1,9 +1,11 @@
 """backend/database/models.py — SQLAlchemy ORM models."""
-from datetime import datetime, timezone
 import uuid
-from sqlalchemy import String, Text, DateTime, ForeignKey
+from datetime import datetime, timezone
+
+from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from backend.database.connection import Base
 
 

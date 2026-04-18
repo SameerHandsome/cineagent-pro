@@ -13,21 +13,23 @@ Shutdown: graceful (nothing special needed).
 """
 import logging
 from contextlib import asynccontextmanager
+
 from dotenv import load_dotenv
-load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api.chat import router as chat_router
-from backend.api.health import router as health_router
-from backend.api.profile import router as profile_router
-from backend.auth.router import router as auth_router
-from backend.config import settings
-from backend.database.connection import init_db
-from backend.rag.indexer import ensure_collection
-from backend.utils.langsmith_config import configure_langsmith
-from mcp_clients.loader import load_all_tools
-from mcp_clients.tool_registry import init_registry
+load_dotenv()
+
+from backend.api.chat import router as chat_router  # noqa: E402
+from backend.api.health import router as health_router  # noqa: E402
+from backend.api.profile import router as profile_router  # noqa: E402
+from backend.auth.router import router as auth_router  # noqa: E402
+from backend.config import settings  # noqa: E402
+from backend.database.connection import init_db  # noqa: E402
+from backend.rag.indexer import ensure_collection  # noqa: E402
+from backend.utils.langsmith_config import configure_langsmith  # noqa: E402
+from mcp_clients.loader import load_all_tools  # noqa: E402
+from mcp_clients.tool_registry import init_registry  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,

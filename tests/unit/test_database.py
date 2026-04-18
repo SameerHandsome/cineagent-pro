@@ -15,7 +15,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 import pytest_asyncio
 
-
 # ── ORM / Schema unit tests (no DB needed) ────────────────────────────────────
 
 class TestSchemas:
@@ -101,7 +100,7 @@ class TestCrud:
             obj.id = fake_user.id
         db.refresh = AsyncMock(side_effect=_refresh)
 
-        user = await create_user(db, "new@example.com", "sameer", "hash123")
+        _ = await create_user(db, "new@example.com", "sameer", "hash123")
         db.add.assert_called_once()
         db.commit.assert_called_once()
 
@@ -161,7 +160,7 @@ class TestCrud:
         db.commit = AsyncMock()
 
         sid = str(uuid.uuid4())
-        msg = await save_message(db, sid, "user", "Hello!")
+        _ = await save_message(db, sid, "user", "Hello!")
         db.add.assert_called_once()
         added = db.add.call_args[0][0]
         assert added.role    == "user"
@@ -206,7 +205,7 @@ class TestCrud:
 
         sid = str(uuid.uuid4())
         uid = str(uuid.uuid4())
-        result = await update_session_title(db, sid, uid, "New Title")
+        _ = await update_session_title(db, sid, uid, "New Title")
         assert fake_session.title == "New Title"
 
     @pytest.mark.asyncio

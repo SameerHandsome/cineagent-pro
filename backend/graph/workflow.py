@@ -73,9 +73,12 @@ def route_after_script(state: CineAgentState):
     active = state.get("active_agents", [])
     next_nodes = []
 
-    if "budget"  in active: next_nodes.append("budget_planner")
-    if "casting" in active: next_nodes.append("casting_director")
-    if "market"  in active: next_nodes.append("market_intel")
+    if "budget" in active:
+        next_nodes.append("budget_planner")
+    if "casting" in active:
+        next_nodes.append("casting_director")
+    if "market" in active:
+        next_nodes.append("market_intel")
 
     # If no downstream agents, skip straight to synthesizer
     if not next_nodes:
@@ -92,8 +95,8 @@ def build_workflow() -> StateGraph:
     graph.add_node("orchestrator",      orchestrator_node)
     graph.add_node("script_analyst",    script_analyst_node)
     graph.add_node("budget_planner",    _budget_node_staggered)
-    graph.add_node("casting_director",  _casting_node_staggered)   
-    graph.add_node("market_intel",      _market_node_staggered)  
+    graph.add_node("casting_director",  _casting_node_staggered)
+    graph.add_node("market_intel",      _market_node_staggered)
     graph.add_node("join",              _join_node)
     graph.add_node("synthesizer",       synthesizer_node)
 

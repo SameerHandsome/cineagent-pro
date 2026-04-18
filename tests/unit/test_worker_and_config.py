@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ── Config ─────────────────────────────────────────────────────────────────────
 
 class TestConfig:
@@ -98,7 +97,7 @@ class TestGenerateAndIndex:
              patch("backend.worker.tasks.index_session_summary",
                    new_callable=AsyncMock) as mock_index_summary, \
              patch("backend.worker.tasks.index_user_preference",
-                   new_callable=AsyncMock) as mock_index_pref:
+                   new_callable=AsyncMock) as _mock_index_pref:
 
             # Should not raise
             await _generate_and_index("u1", "s1", "message", "report", ["drama"])
@@ -135,6 +134,7 @@ class TestTriggerBackgroundIndexingTask:
         # We import the tasks module directly and read the attribute before the mock
         # replaces it — or we reach into the Celery app registry instead.
         import importlib
+
         import backend.worker.tasks as tasks_mod
         # Reload to get past any module-level mock replacement
         importlib.reload(tasks_mod)
@@ -142,6 +142,7 @@ class TestTriggerBackgroundIndexingTask:
 
     def test_task_has_retry_config(self):
         import importlib
+
         import backend.worker.tasks as tasks_mod
         importlib.reload(tasks_mod)
         assert tasks_mod.trigger_background_indexing.max_retries == 2

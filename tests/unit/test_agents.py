@@ -13,7 +13,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ── _base.py ─────────────────────────────────────────────────────────────────
 
 class TestCoerceArgs:
@@ -104,6 +103,7 @@ class TestRunAgentLoop:
     @pytest.mark.asyncio
     async def test_returns_content_when_no_tool_calls(self):
         from langchain_core.prompts import ChatPromptTemplate
+
         from backend.agents._base import run_agent_loop
 
         fake_response = MagicMock()
@@ -133,6 +133,7 @@ class TestRunAgentLoop:
     @pytest.mark.asyncio
     async def test_recovers_from_malformed_tool_call_error(self):
         from langchain_core.prompts import ChatPromptTemplate
+
         from backend.agents._base import run_agent_loop
 
         fake_plain_response = MagicMock()
@@ -174,6 +175,7 @@ class TestRunAgentLoop:
     @pytest.mark.asyncio
     async def test_reraises_non_tool_errors(self):
         from langchain_core.prompts import ChatPromptTemplate
+
         from backend.agents._base import run_agent_loop
 
         mock_llm = AsyncMock()
@@ -219,6 +221,7 @@ class TestOrchestratorRefinementDetection:
     @pytest.mark.asyncio
     async def test_orchestrator_overrides_full_analysis_to_refine(self, mock_settings):
         import json
+
         from backend.agents.orchestrator import orchestrator_node
 
         fake_response = MagicMock()
@@ -357,7 +360,7 @@ class TestScriptAnalystNode:
 
         with patch("backend.agents.script_analyst.run_agent_loop",
                    side_effect=_mock_loop):
-            result = await script_analyst_node(sample_state_followup)
+            _ = await script_analyst_node(sample_state_followup)
 
         assert captured_tools == []  # tools suppressed on followup
 

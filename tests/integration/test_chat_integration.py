@@ -72,7 +72,7 @@ class TestChatEndpoint:
     def test_streaming_response_contains_session_id(
         self, app, auth_headers, mock_redis
     ):
-        session_id = str(uuid.uuid4())
+        _session_id = str(uuid.uuid4())
 
         with patch("backend.api.chat.check_rate_limit",
                    new_callable=AsyncMock, return_value=True), \

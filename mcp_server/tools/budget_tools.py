@@ -74,7 +74,7 @@ def register_budget_tools(mcp: FastMCP) -> None:
         # Groq sometimes passes integers as strings — coerce defensively
         shoot_days = int(shoot_days)
         num_principal_cast = int(num_principal_cast)
-        
+
         multiplier = COMPLEXITY_MULTIPLIERS.get(structural_complexity, 1.0)
 
         line_items: dict[str, float] = {}

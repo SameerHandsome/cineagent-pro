@@ -141,7 +141,7 @@ class TestFullAnalysisPipeline:
 
         captured_budget_state = {}
 
-        original_budget_node = None
+        _ = None
         async def _spy_budget(state):
             captured_budget_state.update(state)
             # Return minimal valid output

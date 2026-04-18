@@ -73,6 +73,7 @@ class TestAuthRouter:
 
     def _make_app(self):
         from fastapi import FastAPI
+
         from backend.auth.router import router
         app = FastAPI()
         app.include_router(router)
@@ -109,6 +110,7 @@ class TestAuthRouter:
 
     def test_login_wrong_password(self, mock_settings):
         from fastapi.testclient import TestClient
+
         # Must be a real bcrypt hash — passlib raises an exception on malformed hashes,
         # which becomes a 500 instead of 401.  This is bcrypt("correctpassword").
         from passlib.context import CryptContext

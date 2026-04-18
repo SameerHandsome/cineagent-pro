@@ -12,12 +12,12 @@ Tool naming convention:
                    read_file, list_uploads
 """
 import logging
-from typing import Dict, List, Set, Protocol, runtime_checkable
+from typing import Dict, List, Protocol, Set, runtime_checkable
 
 logger = logging.getLogger(__name__)
 
 # ── Decoupled Tool Protocol ───────────────────────────────────────────────────
-# By using a Protocol, we remove the strict dependency on LangChain. 
+# By using a Protocol, we remove the strict dependency on LangChain.
 # Any tool object (LangChain, AutoGen, or custom) with a 'name' string is valid.
 @runtime_checkable
 class AgentTool(Protocol):
@@ -92,15 +92,15 @@ class ToolRegistry:
         for name in required_names:
             # Prioritize exact match, fallback to short name match
             tool = self._tools_by_exact_name.get(name) or self._tools_by_short_name.get(name)
-            
+
             if tool:
                 subset.append(tool)
             else:
                 missing.append(name)
-                
+
         if missing:
             logger.warning(f"[{agent_name}] Tools unavailable (remote server down or renamed?): {missing}")
-            
+
         return subset
 
     @property
@@ -139,7 +139,7 @@ def init_registry(tools: List[AgentTool]) -> ToolRegistry:
 def get_registry() -> ToolRegistry:
     """
     Get the application's ToolRegistry instance.
-    NOTE: If migrating to pure FastAPI standards, consider injecting this via 
+    NOTE: If migrating to pure FastAPI standards, consider injecting this via
     `Depends(get_registry)` in your routers rather than calling it directly.
     """
     if _instance is None:

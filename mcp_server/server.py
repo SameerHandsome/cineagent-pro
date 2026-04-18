@@ -22,15 +22,16 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from fastmcp import FastMCP
-from tavily import TavilyClient
+from fastmcp import FastMCP  # noqa: E402
+from tavily import TavilyClient  # noqa: E402
 
-from mcp_server.tools.budget_tools import register_budget_tools
-from mcp_server.tools.casting_tools import register_casting_tools
-from mcp_server.tools.market_tools import register_market_tools
-from mcp_server.tools.script_tools import register_script_tools
+from mcp_server.tools.budget_tools import register_budget_tools  # noqa: E402
+from mcp_server.tools.casting_tools import register_casting_tools  # noqa: E402
+from mcp_server.tools.market_tools import register_market_tools  # noqa: E402
+from mcp_server.tools.script_tools import register_script_tools  # noqa: E402
 
 port = int(os.getenv("MCP_SERVER_PORT", 8001))
 mcp = FastMCP("cineagent")

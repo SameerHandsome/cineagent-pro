@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ── Embedder ──────────────────────────────────────────────────────────────────
 
 class TestEmbedder:
@@ -45,6 +44,7 @@ class TestEmbedder:
         # Import the real function from source (it's still the lru_cache object)
         # by temporarily unpatching it
         from functools import lru_cache
+
         from sentence_transformers import SentenceTransformer as _ST  # noqa: F401
 
         with patch("backend.rag.embedder.SentenceTransformer") as mock_st:

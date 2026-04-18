@@ -67,6 +67,7 @@ class TestAuthRouter:
 
     @pytest.fixture(autouse=True)
     def _patch_crud(self):
+        import backend.auth.router  # noqa: F401 — ensure module is loaded before patching
         with patch("backend.auth.router.crud") as mock_crud:
             self._crud = mock_crud
             yield

@@ -95,6 +95,8 @@ class TestFullAnalysisPipeline:
              patch("backend.graph.nodes.retrieve_user_context",
                    new_callable=AsyncMock, return_value="No prior history."):
 
+            import sys
+            sys.modules.pop("backend.graph.workflow", None)
             from backend.graph.workflow import build_workflow
             wf = build_workflow()
 
@@ -166,6 +168,8 @@ class TestFullAnalysisPipeline:
              patch("backend.graph.nodes.retrieve_user_context",
                    new_callable=AsyncMock, return_value=""):
 
+            import sys
+            sys.modules.pop("backend.graph.workflow", None)
             from backend.graph.workflow import build_workflow
             wf = build_workflow()
             async for _ in wf.astream(base_initial_state):
@@ -238,6 +242,8 @@ class TestFollowUpPipeline:
              patch("backend.graph.nodes.retrieve_user_context",
                    new_callable=AsyncMock, return_value="User prefers sci-fi."):
 
+            import sys
+            sys.modules.pop("backend.graph.workflow", None)
             from backend.graph.workflow import build_workflow
             wf = build_workflow()
 
@@ -317,6 +323,8 @@ class TestOrchestratorIntegration:
              patch("backend.graph.nodes.retrieve_user_context",
                    new_callable=AsyncMock, return_value=""):
 
+            import sys
+            sys.modules.pop("backend.graph.workflow", None)
             from backend.graph.workflow import build_workflow
             wf = build_workflow()
             async for _ in wf.astream(initial_state):
@@ -373,6 +381,8 @@ class TestStateIsolation:
              patch("backend.graph.nodes.retrieve_user_context",
                    new_callable=AsyncMock, return_value=""):
 
+            import sys
+            sys.modules.pop("backend.graph.workflow", None)
             from backend.graph.workflow import build_workflow
             wf = build_workflow()
 

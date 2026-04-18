@@ -16,7 +16,6 @@ AI-powered film pre-production intelligence. Paste a logline and get a complete 
 - [Docker](#docker)
 - [Kubernetes Deployment](#kubernetes-deployment)
 - [CI/CD](#cicd-github-actions)
-- [Common Issues](#common-issues)
 
 ---
 

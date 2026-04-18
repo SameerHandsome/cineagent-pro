@@ -1,0 +1,512 @@
+/* ── Reset & tokens ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #0d0f13;
+  --surface:     #161921;
+  --surface-2:   #1e2230;
+  --border:      #2a2f3d;
+  --accent:      #e8a838;
+  --accent-dim:  #b8832a;
+  --text:        #e2e5ec;
+  --text-muted:  #6b7280;
+  --danger:      #e05252;
+  --sidebar-w:   280px;
+  --header-h:    56px;
+  --radius:      10px;
+  --font:        'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SIDEBAR
+   FIX: Added min-height: 0 to .session-list so flex children can shrink
+   properly and overflow-y: auto actually kicks in. Without min-height: 0,
+   a flex child ignores overflow and expands to its content size, squeezing
+   other elements and collapsing the list appearance.
+════════════════════════════════════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);   /* FIX: prevent sidebar from shrinking */
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;              /* clip children cleanly */
+  transition: transform .25s ease;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;                /* FIX: never compress header */
+}
+
+.brand-mini { font-size: 14px; font-weight: 700; }
+
+.sidebar-search {
+  padding: 12px 16px;
+  flex-shrink: 0;                /* FIX: never compress search bar */
+}
+.sidebar-search input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+}
+.sidebar-search input:focus { border-color: var(--accent); }
+.sidebar-search input::placeholder { color: var(--text-muted); }
+
+.sessions-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--text-muted);
+  padding: 0 16px 8px;
+  flex-shrink: 0;                /* FIX: never compress label */
+}
+
+/* FIX: The critical fix for sidebar scroll.
+   flex: 1          → take all remaining vertical space
+   min-height: 0    → allow this flex child to shrink below content height
+   overflow-y: auto → scroll when items exceed available height
+   Without min-height: 0, a flex child in a column container defaults to
+   min-height: auto which equals content height, making overflow: auto a no-op. */
+.session-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  padding: 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* FIX: session items had no fixed height — gap: 2px + no min-height caused
+   them to collapse when many were rendered. Added min-height and ensured
+   the text never wraps and always ellipsis-truncates. */
+.session-item {
+  min-height: 40px;              /* FIX: explicit min-height prevents collapse */
+  padding: 6px 8px 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;                /* FIX: items must not shrink inside the list */
+  transition: background .12s, color .12s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+.session-item:hover { background: var(--surface-2); color: var(--text); }
+.session-item.active {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 500;
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+}
+
+/* Session name — takes all available space, truncates */
+.session-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Delete button — hidden by default, shown on row hover */
+.session-delete-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: transparent;
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, color .12s;
+  line-height: 1;
+  font-size: 15px;
+}
+.session-item:hover .session-delete-btn {
+  color: var(--text-muted);
+}
+.session-delete-btn:hover {
+  background: rgba(224, 82, 82, 0.15) !important;
+  color: var(--danger) !important;
+}
+
+.session-skeleton {
+  height: 36px;
+  min-height: 36px;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border-radius: 8px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: .4; }
+  50%       { opacity: .8; }
+}
+
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;                /* FIX: footer never compressed */
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background .12s, color .12s;
+  white-space: nowrap;
+}
+.sidebar-link:hover { background: var(--surface-2); color: var(--text); }
+.sidebar-link.danger:hover { color: var(--danger); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MAIN CHAT AREA
+════════════════════════════════════════════════════════════════════════════ */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.chat-header {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.session-title {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Messages ────────────────────────────────────────────────────────────── */
+.messages-container {
+  flex: 1;
+  min-height: 0;                 /* FIX: allow scrolling in flex column */
+  overflow-y: auto;
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px 24px;
+  text-align: center;
+  gap: 12px;
+}
+.welcome-icon { font-size: 48px; }
+.welcome-screen h2 { font-size: 20px; font-weight: 700; }
+.welcome-screen p { font-size: 14px; color: var(--text-muted); max-width: 480px; line-height: 1.6; }
+
+.example-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.example-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.example-pill:hover { border-color: var(--accent); color: var(--text); }
+
+/* ── Message bubbles ─────────────────────────────────────────────────────── */
+.message-row {
+  display: flex;
+  padding: 4px 20px;
+  gap: 0;
+}
+.message-row.user { justify-content: flex-end; }
+.message-row.assistant { justify-content: flex-start; }
+
+.message-bubble {
+  max-width: 72%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.message-row.user .message-bubble {
+  background: var(--accent);
+  color: #0d0f13;
+  border-bottom-right-radius: 4px;
+}
+
+.message-row.assistant .message-bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+/* Markdown styling inside assistant bubble */
+.message-bubble h1 { font-size: 18px; font-weight: 700; margin: 16px 0 8px; }
+.message-bubble h2 { font-size: 15px; font-weight: 600; margin: 14px 0 6px; color: var(--accent); }
+.message-bubble h3 { font-size: 14px; font-weight: 600; margin: 12px 0 4px; }
+.message-bubble p  { margin: 6px 0; }
+.message-bubble ul, .message-bubble ol { margin: 6px 0 6px 20px; }
+.message-bubble li { margin: 3px 0; }
+.message-bubble table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 10px 0; }
+.message-bubble th { background: var(--surface-2); padding: 6px 10px; text-align: left; font-weight: 600; border: 1px solid var(--border); }
+.message-bubble td { padding: 6px 10px; border: 1px solid var(--border); }
+.message-bubble code { background: var(--surface-2); border-radius: 4px; padding: 1px 5px; font-size: 12px; font-family: monospace; }
+.message-bubble strong { font-weight: 600; }
+.message-bubble em { font-style: italic; color: var(--text-muted); }
+.message-bubble hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+/* Typing cursor */
+.typing-cursor::after {
+  content: '▋';
+  animation: blink .7s step-end infinite;
+  color: var(--accent);
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── Agent status bar ────────────────────────────────────────────────────── */
+.agent-status-bar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 20px;
+  flex-shrink: 0;
+}
+
+.agent-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  transition: all .2s;
+}
+.agent-pill.active   { border-color: var(--accent); color: var(--accent); }
+.agent-pill.complete { border-color: #4ade80;        color: #4ade80; }
+
+/* ── Input area ──────────────────────────────────────────────────────────── */
+.input-area {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: border-color .15s;
+}
+.input-wrapper:focus-within { border-color: var(--accent); }
+
+textarea {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  max-height: 160px;
+  overflow-y: auto;
+}
+textarea::placeholder { color: var(--text-muted); }
+
+.btn-send {
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #0d0f13;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.btn-send:hover:not(:disabled) { background: var(--accent-dim); }
+.btn-send:disabled { opacity: .35; cursor: not-allowed; }
+
+.input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Message action menu (⋯ button + dropdown) ────────────────────────────── */
+.msg-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: flex-end;       /* sit at bottom of message row */
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.message-row:hover .msg-actions { opacity: 1; }
+
+/* For user messages the menu is on the left, for assistant on the right */
+.message-row.user .msg-actions  { margin-right: 4px; }
+.message-row.assistant .msg-actions { margin-left: 4px; }
+
+.msg-dots-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 1px;
+  transition: background .12s, color .12s;
+  padding-bottom: 4px;       /* optical centre for ⋯ */
+}
+.msg-dots-btn:hover { background: var(--border); color: var(--text); }
+
+.msg-dropdown {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 130px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  z-index: 200;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+/* User messages: dropdown opens to the left; assistant: to the right */
+.message-row.user .msg-dropdown    { right: 0; }
+.message-row.assistant .msg-dropdown { left: 0; }
+
+.msg-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background .1s, color .1s;
+  white-space: nowrap;
+}
+.msg-dropdown-item:hover           { background: var(--border); color: var(--text); }
+.msg-dropdown-item.danger:hover    { background: rgba(224,82,82,.15); color: var(--danger); }
+
+/* ── Icon button ─────────────────────────────────────────────────────────── */
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, color .12s;
+}
+.btn-icon:hover { background: var(--surface-2); color: var(--text); }
+
+.hidden { display: none !important; }
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .sidebar { position: fixed; z-index: 100; transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .message-bubble { max-width: 90%; }
+}

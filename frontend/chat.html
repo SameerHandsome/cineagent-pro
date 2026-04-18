@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineAgent Pro — Chat</title>
+  <link rel="stylesheet" href="css/chat.css" />
+</head>
+<body>
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <div class="brand-mini">🎬 CineAgent Pro</div>
+      <button class="btn-icon" id="new-session-btn" title="New project">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" id="session-search" placeholder="Search projects…" />
+    </div>
+
+    <div class="sessions-label">Recent Projects</div>
+
+    <ul class="session-list" id="session-list">
+      <li class="session-skeleton"></li>
+      <li class="session-skeleton"></li>
+      <li class="session-skeleton"></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="profile.html" class="sidebar-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+        Profile
+      </a>
+      <button class="sidebar-link danger" id="logout-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign Out
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── Main chat area ──────────────────────────────────────────────────── -->
+  <main class="chat-main">
+
+    <header class="chat-header">
+      <button class="btn-icon sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="session-title" id="session-title">New Project</div>
+    </header>
+
+    <!-- Messages -->
+    <div class="messages-container" id="messages-container">
+      <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-icon">🎬</div>
+        <h2>Start a new project</h2>
+        <p>Paste a logline, treatment, or concept. CineAgent will handle script analysis, budget estimation, casting suggestions, and market intelligence.</p>
+        <div class="example-prompts">
+          <button class="example-pill" data-prompt="A rogue AI on a deep space mining vessel begins making autonomous decisions to protect the crew, even when those decisions conflict with the mission.">
+            🚀 Sci-fi AI concept
+          </button>
+          <button class="example-pill" data-prompt="What would a 30-day indie shoot cost with SAG actors for a contained horror thriller?">
+            💰 Budget question
+          </button>
+          <button class="example-pill" data-prompt="Who are the best casting options for a $4M psychological thriller with a strong female lead?">
+            🎭 Casting query
+          </button>
+          <button class="example-pill" data-prompt="How did comparable micro-budget horror films perform at box office in the last 3 years?">
+            📊 Market research
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent status bar (shown during streaming) -->
+    <div class="agent-status-bar hidden" id="agent-status-bar">
+      <div class="agent-pill" id="pill-script">📖 Script</div>
+      <div class="agent-pill" id="pill-budget">💰 Budget</div>
+      <div class="agent-pill" id="pill-casting">🎭 Casting</div>
+      <div class="agent-pill" id="pill-market">📊 Market</div>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea
+          id="message-input"
+          placeholder="Describe your film concept, ask about budget, casting, or market data…"
+          rows="1"
+          maxlength="4000"
+        ></textarea>
+        <button class="btn-send" id="send-btn" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="input-footer">
+        <span id="char-count">0 / 4000</span>
+        <span>CineAgent may make mistakes — verify financial figures independently.</span>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="js/chat.js"></script>
+</body>
+</html>

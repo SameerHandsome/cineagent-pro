@@ -1,0 +1,90 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# CineAgent Pro — docker-compose for LOCAL DEVELOPMENT
+#
+# Services:
+#   backend    — FastAPI app on port 8000
+#   worker     — Celery worker (same image, different CMD)
+#   mcp-server — Local FastMCP tool server on port 8001
+#   frontend   — Nginx serving static HTML/CSS/JS on port 3000
+#
+# External services (cloud):
+#   Neon PostgreSQL, Upstash Redis, Qdrant Cloud — configured via .env
+# ══════════════════════════════════════════════════════════════════════════════
+
+version: "3.9"
+
+services:
+
+  # ── FastAPI Backend ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: cineagent-pro:latest
+    container_name: cineagent-backend
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../:/app                     # hot reload in development
+      - ../uploads:/app/uploads
+    env_file:
+      - ../.env
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:8001
+      - FRONTEND_ORIGIN=http://localhost:3000
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: on-failure
+
+  # ── Celery Worker ───────────────────────────────────────────────────────────
+  worker:
+    image: cineagent-pro:latest
+    container_name: cineagent-worker
+    command: celery -A backend.worker.celery_app worker --loglevel=info --concurrency=2
+    volumes:
+      - ../:/app
+    env_file:
+      - ../.env
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:8001
+    depends_on:
+      - backend
+    restart: on-failure
+
+  # ── Local FastMCP Server ────────────────────────────────────────────────────
+  mcp-server:
+    image: cineagent-pro:latest
+    container_name: cineagent-mcp
+    command: python mcp_server/server.py
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../:/app
+    env_file:
+      - ../.env
+    environment:
+      - MCP_SERVER_PORT=8001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+
+  # ── Frontend (Nginx static) ─────────────────────────────────────────────────
+  frontend:
+    image: nginx:1.27-alpine
+    container_name: cineagent-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ../frontend:/usr/share/nginx/html:ro
+    restart: on-failure

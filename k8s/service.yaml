@@ -1,0 +1,32 @@
+# ── Backend Service ───────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: cineagent
+spec:
+  selector:
+    app: cineagent-backend
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+
+---
+# ── MCP Server Service ────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server-service
+  namespace: cineagent
+spec:
+  selector:
+    app: mcp-server
+  ports:
+    - name: mcp
+      protocol: TCP
+      port: 8001
+      targetPort: 8001
+  type: ClusterIP

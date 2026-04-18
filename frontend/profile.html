@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineAgent Pro — Profile</title>
+  <link rel="stylesheet" href="css/profile.css" />
+</head>
+<body>
+
+  <div class="profile-layout">
+
+    <!-- Back nav -->
+    <nav class="profile-nav">
+      <a href="chat.html" class="btn-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Back to Projects
+      </a>
+    </nav>
+
+    <div class="profile-container">
+
+      <!-- User card -->
+      <section class="profile-card">
+        <div class="avatar" id="user-avatar">?</div>
+        <div class="profile-info">
+          <h1 class="profile-name" id="profile-username">Loading…</h1>
+          <p class="profile-email" id="profile-email"></p>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-sessions">—</div>
+          <div class="stat-label">Projects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-messages">—</div>
+          <div class="stat-label">Queries</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-genres">—</div>
+          <div class="stat-label">Top Genre</div>
+        </div>
+      </section>
+
+      <!-- Recent sessions -->
+      <section class="profile-section">
+        <h2 class="section-title">Recent Projects</h2>
+        <ul class="recent-sessions" id="recent-sessions">
+          <li class="session-skeleton-profile"></li>
+          <li class="session-skeleton-profile"></li>
+        </ul>
+      </section>
+
+      <!-- Danger zone -->
+      <section class="profile-section danger-zone">
+        <h2 class="section-title">Account</h2>
+        <button class="btn-danger" id="signout-btn">Sign Out</button>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="js/profile.js"></script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Backend Deployment — FastAPI app
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cineagent-backend
+  namespace: cineagent
+  labels:
+    app: cineagent-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cineagent-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0       # zero downtime during rollout
+  template:
+    metadata:
+      labels:
+        app: cineagent-backend
+    spec:
+      containers:
+        - name: backend
+          image: sameerhandsome12/cineagent-pro:latest
+          imagePullPolicy: Always
+          command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: cineagent-config
+            - secretRef:
+                name: cineagent-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/uploads
+      volumes:
+        - name: uploads
+          emptyDir: {}
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# MCP Server Deployment — Local FastMCP tool server
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server
+  namespace: cineagent
+  labels:
+    app: mcp-server
+spec:
+  replicas: 1                 # single replica — stateless tool server
+  selector:
+    matchLabels:
+      app: mcp-server
+  template:
+    metadata:
+      labels:
+        app: mcp-server
+    spec:
+      containers:
+        - name: mcp-server
+          image: sameerhandsome12/cineagent-pro:latest
+          imagePullPolicy: Always
+          command: ["python", "mcp_server/server.py"]
+          ports:
+            - containerPort: 8001
+          envFrom:
+            - configMapRef:
+                name: cineagent-config
+            - secretRef:
+                name: cineagent-secrets
+          env:
+            - name: MCP_SERVER_PORT
+              value: "8001"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 20

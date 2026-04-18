@@ -1,0 +1,195 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  IMAGE_NAME: sameerhandsome12/cineagent-pro
+
+jobs:
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Job 1 — Code Quality
+  # ══════════════════════════════════════════════════════════════════════════
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install quality tools
+        run: pip install black==24.10.0 ruff==0.8.0
+
+      - name: Black formatting check
+        run: black --check --diff .
+
+      - name: Ruff lint check
+        run: ruff check .
+
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Job 2 — Tests
+  # ══════════════════════════════════════════════════════════════════════════
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # ── Auth ──────────────────────────────────────────────────────────────
+      SECRET_KEY: ci-test-secret-key-minimum-32-characters-long
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+
+      # ── Groq ──────────────────────────────────────────────────────────────
+      GROQ_API_KEY: gsk_ci_dummy_key
+      GROQ_MODEL: meta-llama/llama-4-scout-17b-16e-instruct
+
+      # ── Database ──────────────────────────────────────────────────────────
+      # Fake postgres URI — passes as a plain str field in config.py.
+      # asyncpg never dials it because all DB calls are mocked in tests.
+      DATABASE_URL: postgresql+asyncpg://ci:ci@localhost:5432/ci_test
+
+      # ── Redis / Upstash ───────────────────────────────────────────────────
+      UPSTASH_REDIS_REST_URL: https://ci-dummy.upstash.io
+      UPSTASH_REDIS_REST_TOKEN: ci_dummy_token
+      REDIS_URL: redis://localhost:6379
+
+      # ── Celery ────────────────────────────────────────────────────────────
+      # Points at the Redis service container above.
+      # memory:// only works single-process; redis:// is safer for CI.
+      CELERY_BROKER_URL: redis://localhost:6379/0
+
+      # ── Qdrant ────────────────────────────────────────────────────────────
+      QDRANT_URL: https://ci-dummy.qdrant.io
+      QDRANT_API_KEY: ci_dummy_qdrant_key
+      QDRANT_COLLECTION: cineagent_sessions
+
+      # ── GitHub OAuth ──────────────────────────────────────────────────────
+      GITHUB_CLIENT_ID: ci_github_client_id
+      GITHUB_CLIENT_SECRET: ci_github_client_secret
+      GITHUB_REDIRECT_URI: http://localhost:8000/auth/github/callback
+      GITHUB_TOKEN: ci_github_token
+
+      # ── External APIs ─────────────────────────────────────────────────────
+      TAVILY_API_KEY: ci_tavily_key
+      STEEL_API_KEY: ci_steel_key
+
+      # ── LangSmith ─────────────────────────────────────────────────────────
+      LANGCHAIN_TRACING_V2: "false"
+      LANGCHAIN_API_KEY: ci_dummy_langsmith_key
+      LANGCHAIN_PROJECT: cineagent-pro-ci
+
+      # ── MCP Server ────────────────────────────────────────────────────────
+      MCP_SERVER_URL: http://localhost:8001
+      MCP_SERVER_PORT: 8001
+
+      # ── CORS ──────────────────────────────────────────────────────────────
+      FRONTEND_ORIGIN: http://localhost:3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install test-only dependencies
+        run: pip install pytest-asyncio==0.23.8 pytest-mock
+
+      - name: Run unit tests
+        run: pytest tests/unit/ -v --tb=short --junitxml=unit-results.xml
+
+      - name: Run integration tests
+        run: pytest tests/integration/ -v --tb=short --junitxml=integration-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: |
+            unit-results.xml
+            integration-results.xml
+          retention-days: 7
+
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Job 3 — Docker Build & Push (main only)
+  # ══════════════════════════════════════════════════════════════════════════
+  build:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata (tags)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image digest summary
+        run: |
+          echo "### ✅ Docker Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:** ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

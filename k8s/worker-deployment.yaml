@@ -1,0 +1,57 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Celery Worker Deployment
+# Same image as the backend — only the CMD differs.
+# Workers handle background indexing tasks after each chat response.
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cineagent-worker
+  namespace: cineagent
+  labels:
+    app: cineagent-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cineagent-worker
+  template:
+    metadata:
+      labels:
+        app: cineagent-worker
+    spec:
+      containers:
+        - name: worker
+          image: sameerhandsome12/cineagent-pro:latest
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - backend.worker.celery_app
+            - worker
+            - --loglevel=info
+            - --concurrency=2
+            - --queues=default
+          envFrom:
+            - configMapRef:
+                name: cineagent-config
+            - secretRef:
+                name: cineagent-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - backend.worker.celery_app
+                - inspect
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            failureThreshold: 3

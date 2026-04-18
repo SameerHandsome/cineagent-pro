@@ -80,7 +80,7 @@ async def context_assembly_node(state: CineAgentState) -> CineAgentState:
         user_id=user_id, query=state.get("user_message", "")
     )
 
-    return {"session_history": session_history, "user_context": user_context}
+    return {**state, "session_history": session_history, "user_context": user_context}
 
 
 def _build_history_block(session_history: list) -> str:
@@ -265,4 +265,4 @@ async def synthesizer_node(state: CineAgentState) -> CineAgentState:
         logger.error(f"synthesizer_node failed: {e}")
         report = f"# Error generating report: {e}"
 
-    return {"final_report": report}
+    return {**state, "final_report": report}
